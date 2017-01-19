@@ -1,0 +1,24 @@
+---
+
+- hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Deploy sysctl template to disable ipv6
+    template: src=etc/sysctl.d/ipv6.conf.j2 dest=/etc/sysctl.d/ipv6.conf
+    notify: reset-sysctl
+
+  - name: Detect ::1 in /etc/hosts
+    shell: /bin/egrep '^\s*::1.*$' /etc/hosts
+    register: hosts_lo_ipv6
+    failed_when: false
+    check_mode: no
+
+  - name: Remove ::1 from /etc/hosts
+    lineinfile: dest=/etc/hosts regexp='^\s*::1.*$' state=absent
+    when: hosts_lo_ipv6.rc == 0
+
+  handlers:
+  - name: reset-sysctl
+    command: /sbin/sysctl -p

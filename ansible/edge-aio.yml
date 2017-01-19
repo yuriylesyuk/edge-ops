@@ -1,0 +1,11 @@
+---
+- name: Edge AIO Install and Config
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    IP1: 10.132.0.3
+
+  tasks:
+  - template: src=conf/aio.cfg.j2 dest=/opt/aio.cfg
+

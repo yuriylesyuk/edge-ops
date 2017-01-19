@@ -1,0 +1,21 @@
+---
+
+- hosts: all
+  gather_facts: no
+  
+  vars: 
+    service_account_email: gce-account@dark-safeguard-152518.iam.gserviceaccount.com
+    credentials_file: /Users/yuriylesyuk/.ssh/EDGE-Squared-4e8de82ed05f.json
+    project_id: dark-safeguard-152518
+
+  tasks:
+    - local_action:
+        module: gce_net
+        name: default
+        fwname: test-http-8082
+        allowed: tcp:8082
+        src_range: "0.0.0.0/0"
+        src_tags: ["gce-aio-1701"]
+        service_account_email: "{{ service_account_email }}"
+        credentials_file: "{{ credentials_file }}"
+        project_id: "{{ project_id }}"

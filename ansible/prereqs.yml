@@ -1,0 +1,19 @@
+---
+
+- name: NTP Install and Config
+  hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - yum: name=* state=latest
+  
+  - yum: name=mc state=installed
+
+  - yum: pkg={{ item }} state=installed 
+    with_items:
+      - nc
+      - wget
+      - openssh-clients
+      - zip
+      - unzip

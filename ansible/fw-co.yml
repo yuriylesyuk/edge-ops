@@ -1,0 +1,35 @@
+---
+
+- hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - block:
+    - name: Firewall configurations
+      service: name=firewalld enabled=yes state=started
+
+    - firewalld: port=5432/tcp permanent=yes state=enabled
+      notify: restart-firewalld
+ 
+    - firewalld: port=8080/tcp permanent=yes state=enabled
+      notify: restart-firewalld
+
+    - firewalld: port=9000/tcp permanent=yes state=enabled
+      notify: restart-firewalld
+
+    - firewalld: port=9001/tcp permanent=yes state=enabled
+      notify: restart-firewalld
+
+    - firewalld: port=8079/tcp permanent=yes state=enabled
+      notify: restart-firewalld
+
+    - firewalld: port=80/tcp permanent=yes state=enabled
+      notify: restart-firewalld
+
+    - firewalld: port=3000/tcp permanent=yes state=enabled
+      notify: restart-firewalld
+
+  handlers:
+  - name: restart-firewalld
+    service: name=firewalld state=restarted

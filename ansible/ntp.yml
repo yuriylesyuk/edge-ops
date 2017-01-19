@@ -1,0 +1,21 @@
+---
+
+- name: NTP Install and Config
+  hosts: all
+  vars:
+    ntp_server: [pool.ntp.org, south-america.pool.ntp.org]
+
+  tasks:
+  - yum: name=ntp state=installed
+
+  - template: src=etc/ntp.conf.j2 dest=/etc/ntp.conf
+    notify:
+      - restart ntp
+
+  - service: name=ntpd state=started enabled=yes
+
+  handlers:
+  - name: restart ntp
+    service: name=ntpd state=restarted
+
+

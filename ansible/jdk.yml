@@ -1,0 +1,105 @@
+---
+
+#
+# RedHat|CentOs7/OracleJDK
+# Cloned from https://github.com/William-Yeh/ansible-oracle-java
+#
+
+- hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    - java_version: 8
+    # NB: b14, 111; b15, 112 
+    - java_subversion: 111
+    - java_build: 14
+    - java_download_path: /tmp
+    
+
+  tasks:
+  - name: set java architecture
+    set_fact:
+      jdk_arch: "{{ 'i586'  if ansible_architecture == 'i386' else 'x64' }}"
+  - name: set java OS for Linux
+    set_fact:
+      jdk_os: linux
+    when: ansible_system == 'Linux'
+
+  - name: set java installation directory on non-Debian platforms
+    set_fact:
+      java_install_dir: /usr/java
+      java_default_link_name: default
+          
+  - name: set general internal vars
+    set_fact:
+      jdk_version: "1.{{ java_version }}.0_{{ java_subversion }}"
+    
+  - name: set internal vars for 1.8.0_102
+    set_fact:
+      jdk_version_detail: "{{ java_version }}u{{ java_subversion }}-b{{ java_build }}"
+      
+  - name: compose filename, if necessary
+    set_fact:
+      jdk_tarball_file: "jdk-{{ java_version }}u{{ java_subversion }}-{{ jdk_os }}-{{ jdk_arch }}"
+      
+  - name: compose url for downloading file, if necessary
+    set_fact:
+      jdk_tarball_url:  "http://download.oracle.com/otn-pub/java/jdk/{{ jdk_version_detail }}/{{ jdk_tarball_file }}"      
+  
+  - name: get JDK tarball as RPM file
+    get_url:
+      url: "{{ jdk_tarball_url }}.rpm"
+      headers: 'Cookie:oraclelicense=accept-securebackup-cookie'
+      dest: "{{ java_download_path }}/{{ jdk_tarball_file }}.rpm"
+    
+  - name: install JDK via RPM file with yum
+    yum:
+      name: "{{ java_download_path }}/{{ jdk_tarball_file }}.rpm"
+      state: present    
+
+
+  - block:
+
+    - name: link "{{ java_install_dir }}/{{ java_default_link_name }}"
+      file:
+        dest: "{{ java_install_dir }}/{{ java_default_link_name }}"
+        src: "{{ java_install_dir }}/jdk{{ jdk_version }}"
+        state: link
+
+    - name: alternatives link for "java"
+      alternatives:
+        name: java
+        link: /usr/bin/java
+        path: "{{ java_install_dir }}/{{ java_default_link_name }}/bin/java"
+
+    - name: alternatives link for "javac"
+      alternatives:
+        name: javac
+        link: /usr/bin/javac
+        path: "{{ java_install_dir }}/{{ java_default_link_name }}/bin/javac"
+
+    - name: alternatives link for "jar"
+      # If failed, see: https://www.appsintegra.com/blog/2015/12/no-such-file-or-directory-when-adding-application-with-alternatives-in-linux/
+      # sudo rm /usr/bin/jar
+      # sudo rm /var/lib/alternatives/jar
+      # sudo alternatives –install /usr/bin/jar jar /usr/java/latest/bin/jar 20000
+      alternatives:
+        name: jar
+        link: /usr/bin/jar
+        path: "{{ java_install_dir }}/{{ java_default_link_name }}/bin/jar"
+
+    - name: check if "java_sdk" target exists
+      stat: path=/usr/lib/jvm/java
+      register: filecheck
+
+    - name: alternatives link for "java_sdk"
+      alternatives:
+        name: java_sdk
+        link: /usr/lib/jvm/java
+        path: "{{ java_install_dir }}/{{ java_default_link_name }}"
+      when: filecheck and filecheck.stat.exists
+
+    - name: Setup JAVA_HOME
+      template: 
+        src: etc/profile.d/java-home.j2
+        dest: /etc/profile.d/java-home.sh

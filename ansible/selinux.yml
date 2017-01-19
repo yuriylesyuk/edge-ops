@@ -1,0 +1,12 @@
+---
+
+- name: NTP Install and Config
+  hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - selinux: policy=targeted state=permissive
+
+  - selinux: state=disabled
+
