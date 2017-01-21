@@ -1,6 +1,6 @@
 ---
 
-- name: NTP Install and Config
+- name: NTP Install and Configuration
   hosts: all
   vars:
     ntp_server: [pool.ntp.org, south-america.pool.ntp.org]

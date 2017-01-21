@@ -1,6 +1,6 @@
 ---
 
-- name: NTP Install and Config
+- name: SELinux Configuration
   hosts: all
   become: yes
   become_method: sudo
