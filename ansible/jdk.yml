@@ -51,6 +51,7 @@
       url: "{{ jdk_tarball_url }}.rpm"
       headers: 'Cookie:oraclelicense=accept-securebackup-cookie'
       dest: "{{ java_download_path }}/{{ jdk_tarball_file }}.rpm"
+      timeout: 180
     
   - name: install JDK via RPM file with yum
     yum:

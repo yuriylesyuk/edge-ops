@@ -1,0 +1,34 @@
+$GOOGLE_PROJECT_ID = "{{ GOOGLE_PROJECT_ID }}"
+$GOOGLE_CLIENT_EMAIL = "gce-account@dark-safeguard-152518.iam.gserviceaccount.com"
+$GOOGLE_JSON_KEY_LOCATION = "/Users/yuriylesyuk/.ssh/EDGE-Squared-4e8de82ed05f.json"
+$LOCAL_USER = "yuriylesyuk"
+$LOCAL_SSH_KEY = "/Users/yuriylesyuk/.ssh/google_compute_engine"
+
+
+Vagrant.configure("2") do |config|
+  config.vm.box = "gce"
+
+  config.vm.provider :google do |google, override|
+    google.google_project_id = $GOOGLE_PROJECT_ID
+    google.google_client_email = $GOOGLE_CLIENT_EMAIL
+    google.google_json_key_location = $GOOGLE_JSON_KEY_LOCATION
+
+    google.name = "{{ VMCFG }}"
+    google.zone = "{{ zone }}"
+
+    google.machine_type = "n1-standard-2"
+    google.image = "centos-7-v20170110"
+    
+    google.disk_size = "10"
+    google.disk_name = "aio1701-4-ssd"
+    google.disk_type = "pd-ssd"
+    
+    google.preemptible = true
+    google.auto_restart = false
+    google.on_host_maintenance = "TERMINATE"
+
+    override.ssh.username = $LOCAL_USER
+    override.ssh.private_key_path = $LOCAL_SSH_KEY
+  end
+
+end

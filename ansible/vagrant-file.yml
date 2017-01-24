@@ -1,0 +1,38 @@
+
+#Usage example:
+#  ansible-playbook ~/dbc/edge-ops/ansible/vagrant-file.yml -vvv  -e "VMCFG=$PWD/gce-aio-1701-6 VMTYPE=gce"
+
+
+---
+
+- name: Vagrantfile generation
+  hosts: localhost
+  vars:
+    # VMCFG:
+    # VMTYPE: gce|vb
+    VMCFGFILE: "{{VMCFG}}.cfg"
+    VMDESTDIR: "{{ VMCFG }}"
+    vm_box: "{{lookup('ini', 'vm.box section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    zone: "{{lookup('ini', 'zone section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    
+    GOOGLE_PROJECT_ID: "{{lookup('ini', 'GOOGLE_PROJECT_ID section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+
+  tasks:
+  
+  - debug: 
+      msg: "{{ vm_box}}"
+    
+      
+  - debug: 
+      msg: "{{lookup('ini', 'zone section=gce-provider file=/Users/yuriylesyuk/vagrants/gce-aio-1701-6.cfg')}}"
+      
+  - set_fact:
+      ip_ini: "{{lookup('ini', 'vm.box section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+  
+
+  - debug: 
+      msg: ">>> {{ hostvars[inventory_hostname]['ip_ini'] }}"
+  
+  - file: path={{VMDESTDIR}} state=directory
+  - template: src=../vagrant/Vagrantfile.{{ VMTYPE }}.j2 dest="{{VMDESTDIR}}/Vagrantfile"
+    delegate_to: localhost

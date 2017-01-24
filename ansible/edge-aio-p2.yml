@@ -1,0 +1,24 @@
+---
+- name: Edge AIO Install and Config
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    # VER: 4.16.09|4.17.01
+    # IP1: 10.132.0.3
+    # PROVIDER: vb|gce
+    EID: /opt/apigee.install
+
+  environment: 
+    EID: {{ EID }}   # Edge Install Directory
+    
+  tasks:
+  - template: src=conf/aio.cfg.j2 dest={{ EID }}/aio.cfg
+
+  - file: path=/opt/apigee.install state=directory
+
+  - get_url:
+      url: "{{ jdk_tarball_url }}.rpm"
+      headers: 'Cookie:oraclelicense=accept-securebackup-cookie'
+      dest: "{{ java_download_path }}/{{ jdk_tarball_file }}.rpm"
+      timeout: 180
