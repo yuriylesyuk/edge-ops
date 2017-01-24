@@ -1,18 +1,34 @@
+
+#
+# Usage: 
+# ansible-playbook -l yl-n1-1701-aio ~/dbc/edge-ops/ansible/edge-aio-dbg.yml -e "IP1=10.132.0.2 apigeeuser=<user> apigeepassword=<password>"
+#
+# ... and don't forget about /tmp/license.txt file
+#
+
 ---
 - name: Edge AIO Install and Config
   hosts: all
   become: yes
   become_method: sudo
   vars:
+    # apigeeuser:
+    # apigeepassword:
+  
+    # VER: 4.16.09|4.17.01
     # IP1: 10.132.0.3
     # PROVIDER: vb|gce
+    EID: /opt/apigee.install
+    LOGFILE: "{{ EID }}/apigee-aio-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
 
+  environment: 
+    EID: "{{ EID }}"   # Edge Install Directory
+    
   tasks:
-  - template: src=conf/aio.cfg.j2 dest=/opt/aio.cfg
+  - file: path="{{ EID }}" state=directory
 
-#- include: prereqs.yml
-#- include: jdk.yml
+  - template: src=conf/aio.cfg.j2 dest="{{ EID }}/aio.cfg"
 
-#- include: fw-{{ PROVIDER }}.yml
-#- include: networking.yml
-#- include: selinux.yml
+  - shell: "/opt/apigee/apigee-setup/bin/setup.sh -p aio -f {{ EID }}/aio.cfg >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"

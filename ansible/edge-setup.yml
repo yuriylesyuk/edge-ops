@@ -1,0 +1,49 @@
+
+#
+# Usage: 
+# ansible-playbook -l yl-n1-1701-aio ~/dbc/edge-ops/ansible/edge-setup.yml -e "IP1=10.132.0.2 apigeeuser=<user> apigeepassword=<password>"
+#
+#
+
+---
+- name: Edge AIO Install and Config
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    # apigeeuser:
+    # apigeepassword:
+  
+    # VER: 4.16.09|4.17.01
+    # IP1: 10.132.0.3
+    # PROVIDER: vb|gce
+    EID: /opt/apigee.install
+    LOGFILE: "{{ EID }}/apigee-setup-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
+
+  environment: 
+    EID: "{{ EID }}"   # Edge Install Directory
+    
+  tasks:
+  - file: path="{{ EID }}" state=directory
+
+  - get_url:
+      url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+      dest: "{{ EID }}"
+      timeout: 180
+  - yum:
+      name: "{{ EID }}/epel-release-latest-7.noarch.rpm"
+      state: present
+  - get_url:
+      url: "https://ap-repo.aeip.apigee.net/bootstrap_4.17.01.sh"
+      dest: "{{ EID }}"
+      url_username: "{{ apigeeuser }}"
+      url_password: "{{ apigeepassword }}"
+      timeout: 180
+  
+  - shell: "bash {{EID}}/bootstrap_4.17.01.sh apigeeuser={{ apigeeuser }} apigeepassword={{ apigeepassword }} apigeestage=e2e apigeerepohost=ap-repo.aeip.apigee.net > {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"
+
+  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-setup install >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"
