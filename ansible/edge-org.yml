@@ -1,0 +1,36 @@
+
+#
+# org onboarding
+#
+# Usage: 
+# ansible-playbook -l yl-n1-1701-aio ~/dbc/edge-ops/ansible/edge-org.yml -e "IP1=10.132.0.2 PROVIDER=gce ORG=org DEV=dev" | tee ansible-aio-`date -u +"%Y-%m-%dT%H:%M:%SZ"`.log
+#
+#
+
+---
+- name: Edge Org Onboarding
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    # apigeeuser:
+    # apigeepassword:
+  
+    # IP1: 10.132.0.3
+    # PROVIDER: vb|gce
+    # ORG:
+    # DEV:
+    EID: /opt/apigee.install
+    LOGFILE: "{{ EID }}/apigee-org-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
+
+  environment: 
+    EID: "{{ EID }}"   # Edge Install Directory
+    
+  tasks:
+  - file: path="{{ EID }}" state=directory
+
+  - template: src=conf/org.cfg.j2 dest="{{ EID }}/org.cfg"
+
+  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-provision setup-org -f {{ EID }}/org.cfg >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"

@@ -1,12 +1,12 @@
 
 #
 # Usage: 
-# ansible-playbook -l yl-n1-1701-aio ~/dbc/edge-ops/ansible/edge-setup.yml -e "IP1=10.132.0.2 apigeeuser=<user> apigeepassword=<password>"
+# ansible-playbook -l yl-n2-1701-dp ~/dbc/edge-ops/ansible/edge-setup.yml -e "apigeeuser=jumpadmin apigeepassword=ArypectONg"
 #
 #
 
 ---
-- name: Edge AIO Install and Config
+- name: Edge Setup setup
   hosts: all
   become: yes
   become_method: sudo
@@ -14,9 +14,6 @@
     # apigeeuser:
     # apigeepassword:
   
-    # VER: 4.16.09|4.17.01
-    # IP1: 10.132.0.3
-    # PROVIDER: vb|gce
     EID: /opt/apigee.install
     LOGFILE: "{{ EID }}/apigee-setup-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
 

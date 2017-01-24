@@ -32,3 +32,14 @@
   - shell: "/opt/apigee/apigee-setup/bin/setup.sh -p aio -f {{ EID }}/aio.cfg >> {{ LOGFILE }}"
     args: 
       chdir: "{{ EID }}/"
+      
+  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-validate install >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"
+
+  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-validate setup -f {{ EID }}/aio.cfg >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"
+
+
+

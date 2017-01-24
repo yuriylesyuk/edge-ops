@@ -1,0 +1,34 @@
+
+#
+# Usage: 
+# ansible-playbook -l yl-n2-1701-dp ~/dbc/edge-ops/ansible/edge-dp.yml -e "IP1=10.128.0.5 PG_HOST=10.132.0.2 ORG=org MGMT_URL=http://10.132.0.2:8080/v1" | tee ansible-dp-`date -u +"%Y-%m-%dT%H:%M:%SZ"`.log
+#
+#
+
+---
+- name: Edge DevPortal
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    # apigeeuser:
+    # apigeepassword:
+  
+    # IP1: 10.132.0.3
+    # ORG:
+    # PG_HOST:
+    # MGMT_URL:
+    EID: /opt/apigee.install
+    LOGFILE: "{{ EID }}/apigee-dp-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
+
+  environment: 
+    EID: "{{ EID }}"   # Edge Install Directory
+    
+  tasks:
+  - file: path="{{ EID }}" state=directory
+
+  - template: src=conf/dp.cfg.j2 dest="{{ EID }}/dp.cfg"
+
+  - shell: "/opt/apigee/apigee-setup/bin/setup.sh -p dp -f {{ EID }}/dp.cfg >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"
