@@ -4,18 +4,22 @@
   gather_facts: no
   
   vars: 
-    service_account_email: gce-account@dark-safeguard-152518.iam.gserviceaccount.com
-    credentials_file: /Users/yuriylesyuk/.ssh/EDGE-Squared-4e8de82ed05f.json
-    project_id: 
+    # VMCFG
+    # GOOGLE_PROJECT_ID
+    # GOOGLE_CLIENT_EMAIL
+    # GOOGLE_JSON_KEY_LOCATION
+    # RULE:    # firewall rule name
+    # ALLOW:   # 'tcp:80' or 'tcp:80,443' or 'tcp:80-800;udp:1-25'
+    TAGS: "{{ VMCFG }}"
 
   tasks:
     - local_action:
         module: gce_net
         name: default
-        fwname: test-http-8000
-        allowed: tcp:9000
+        fwname: "{{ RULE | default( 'allow-on-{{VMCFG}}' ) }}"
+        allowed: "{{ ALLOW | default( 'tcp:9000' ) }}"
         src_range: "0.0.0.0/0"
-        src_tags: ["yl-n1-1701-aio"]
-        service_account_email: "{{ service_account_email }}"
-        credentials_file: "{{ credentials_file }}"
-        project_id: "{{ project_id }}"
+        target_tags: ["{{ TAGS }}"]
+        service_account_email: "{{ GOOGLE_CLIENT_EMAIL }}"
+        credentials_file: "{{ GOOGLE_JSON_KEY_LOCATION }}"
+        project_id: "{{ GOOGLE_PROJECT_ID }}"

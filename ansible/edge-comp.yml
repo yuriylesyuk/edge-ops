@@ -1,0 +1,38 @@
+
+#
+# Usage: 
+# 
+# ansible-playbook -l edge-exco-com ~/dbc/edge-ops/ansible/edge-comp.yml -e "COMP=influxdb INFLUXDB_HOST=10.132.0.2"
+#
+#
+
+---
+- name: Edge Component Install
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    # COMP:
+    CFG: "{{ COMP }}.cfg"
+    EID: /opt/apigee.install
+    LOGFILE: "{{ EID }}/apigee-{{ COMP }}-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
+
+  environment: 
+    EID: "{{ EID }}"   # Edge Install Directory
+    
+  tasks:
+  - file: path="{{ EID }}" state=directory
+
+  - template: src=conf/{{ CFG }}.j2 dest="{{ EID }}/{{ CFG }}"
+
+  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-{{ COMP }} install > {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"
+
+  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-{{ COMP }} setup -f {{ EID }}/{{ CFG }} >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"
+
+  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-{{ COMP }} restart >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"

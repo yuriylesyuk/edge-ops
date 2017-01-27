@@ -15,6 +15,7 @@ Vagrant.configure("2") do |config|
 
     google.name = "{{ VMCFG }}"
     google.zone = "{{ zone }}"
+    google.tags = "{{ VMCFG }}"
 
     google.machine_type = "n1-standard-2"
     google.image = "centos-7-v20170110"
