@@ -1,0 +1,27 @@
+---
+
+- name: Server configuration and tuning
+  hosts: all
+  become: yes
+  become_method: sudo
+
+  tasks:
+  - name: Set file limits (* soft)
+    pam_limits: 
+      domain: '*' 
+      limit_type: soft
+      limit_item: nofile
+      value: 65535
+
+  - name: Set file limits (* hard)
+    pam_limits: 
+      domain: '*'
+      limit_type: hard 
+      limit_item: nofile
+      value: 65535
+
+  - lineinfile: dest=/etc/pam.d/login regexp='^session    required   pam_limits.so' insertafter=EOF line='session    required   pam_limits.so'
+
+  - sysctl: name="fs.file-max" value=65536 sysctl_set=yes state=present reload=yes
+
+  - shell: bash -c ulimit -n unlimited

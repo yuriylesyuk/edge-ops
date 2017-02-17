@@ -1,0 +1,49 @@
+
+#Usage example:
+#  ansible-playbook ~/dbc/edge-ops/ansible/vagrantfile.yml -vvv  -e "VMCFG=$PWD/gce-aio-1701-6.cfg VMDIR=$PWD"
+# 
+
+---
+
+- name: Vagrantfile generation
+  hosts: localhost
+  vars:
+    # VMCFG:
+    VMCFGFILE: "{{ VMCFG }}"
+    # VMTYPE: gce|vb
+    VMTYPE: "{{lookup('ini', 'VMTYPE section=vmconfig file={{VMCFGFILE}}')}}"
+    name: "{{lookup('ini', 'name section=vmconfig file={{VMCFGFILE}}')}}"
+    vm_box: "{{lookup('ini', 'vm.box section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    zone: "{{lookup('ini', 'zone section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    machine_type: "{{lookup('ini', 'machine_type section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    disk_type: "{{lookup('ini', 'disk_type section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+
+    GOOGLE_PROJECT_ID: "{{lookup('ini', 'GOOGLE_PROJECT_ID section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    GOOGLE_CLIENT_EMAIL: "{{lookup('ini', 'GOOGLE_CLIENT_EMAIL section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    GOOGLE_JSON_KEY_LOCATION: "{{lookup('ini', 'GOOGLE_JSON_KEY_LOCATION section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+
+    LOCAL_USER: "{{lookup('ini', 'LOCAL_USER section=vmconfig file={{VMCFGFILE}}')}}"
+    LOCAL_SSH_KEY: "{{lookup('ini', 'LOCAL_SSH_KEY section=vmconfig file={{VMCFGFILE}}')}}"
+
+    VMDESTDIR: "{{ VMDIR }}/{{ name }}"
+
+
+  tasks:
+  
+  - debug: 
+      msg: "{{ vm_box }}"
+    
+      
+  - debug: 
+      msg: "{{lookup('ini', 'zone section={{ VMTYPE }}-provider file=/Users/yuriylesyuk/vagrants/gce-aio-1701-6.cfg')}}"
+      
+  - set_fact:
+      ip_ini: "{{lookup('ini', 'vm.box section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+  
+
+  - debug: 
+      msg: ">>> {{ hostvars[inventory_hostname]['ip_ini'] }}"
+  
+  - file: path={{VMDESTDIR}} state=directory
+  - template: src=../vagrant/Vagrantfile.{{ VMTYPE }}.j2 dest="{{VMDESTDIR}}/Vagrantfile"
+    delegate_to: localhost

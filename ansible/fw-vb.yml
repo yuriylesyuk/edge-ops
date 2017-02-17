@@ -27,6 +27,9 @@
     - firewalld: port=80/tcp permanent=yes state=enabled
       notify: restart-firewalld
 
+    - firewalld: port=443/tcp permanent=yes state=enabled
+      notify: restart-firewalld
+
     - firewalld: port=3000/tcp permanent=yes state=enabled
       notify: restart-firewalld
 

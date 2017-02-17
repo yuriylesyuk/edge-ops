@@ -1,6 +1,6 @@
 ---
 
-- name: NTP Install and Config
+- name: Prereqs Install
   hosts: all
   become: yes
   become_method: sudo

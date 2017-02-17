@@ -1,0 +1,60 @@
+
+#   VMCFG= VMDIR=
+
+---
+- hosts: localhost
+  gather_facts: no
+    
+  vars:
+    name: "{{lookup('ini', 'name section=vmconfig file={{VMCFGFILE}}')}}"
+    hostname: "{{lookup('ini', 'hostname section=vmconfig file={{VMCFGFILE}}')}}"
+    vm_box: "{{lookup('ini', 'vm.box section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    zone: "{{lookup('ini', 'zone section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+
+    LOCAL_USER: "{{lookup('ini', 'LOCAL_USER section=vmconfig file={{VMCFGFILE}}')}}"
+    LOCAL_SSH_KEY: "{{lookup('ini', 'LOCAL_SSH_KEY section=vmconfig file={{VMCFGFILE}}')}}"
+    
+  tasks:
+    - local_action:
+        module: shell
+        args: "vagrant ssh-config | grep HostName | awk '{print $2}'"
+        chdir: "{{ VMDIR }}/{{ name }}"
+      register: instance_ip
+
+    - set_fact:
+        HOSTIP: "{{instance_ip.stdout }}"
+
+    - fail: msg="Empty IP address. Is the {{ name }} instance running?"
+      when: HOSTIP == ""
+
+   #- name: #Add vagrant instance to local /etc/hosts
+    - debug: msg="{{hostname}}"
+
+    - local_action: 
+        module: lineinfile
+        state: present
+        dest: "/etc/hosts"
+        regexp: '^.*{{ hostname }}'
+        line: "{{ HOSTIP }} {{ hostname }}"
+      become: yes
+      become_method: sudo
+
+    - name: Add vagrant instance to local ~/.ssh/config
+      local_action:
+        module: blockinfile
+        state: present
+        dest: ~/.ssh/config
+        marker: "# {mark} Ansible Managed Block [{{ hostname }}]"
+        content: |
+          Host {{ hostname }}
+              IdentityFile {{ LOCAL_SSH_KEY }}
+    
+      
+    - name: Add vagrant instance to local ~/ansible/hosts
+      local_action:
+        module: lineinfile
+        state: present
+        dest: ~/ansible/hosts
+        insertbefore: BOF
+        line: "{{ hostname }} ansible_host={{ HOSTIP }} ansible_user={{ LOCAL_USER }} ansible_ssh_private_key_file={{ LOCAL_SSH_KEY }}"
+        

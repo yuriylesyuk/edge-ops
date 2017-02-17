@@ -1,19 +1,22 @@
-# -*- mode: ruby -*-
-# vi: set ft=ruby :
+$LOCAL_USER = "{{ LOCAL_USER }}"
+$LOCAL_SSH_KEY = "{{ LOCAL_SSH_KEY }}"
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "centos73"
+    config.vm.box = "centos73"
 
-  config.vm.provider "virtualbox" do |vb|
-    vb.name = "co73-1701dp"
-    vb.memory = "1024"
-  end
+    config.vm.provider "virtualbox" do |vb override|
+	vb.name = "{{ VMCFG }}"
+	vb.memory = "{{ memory }}"
 
-  config.vm.network :forwarded_port, guest: 22, host: 2217, id: "ssh"
-  config.vm.network "private_network", ip: "192.168.56.117"
-  config.vm.provision "shell", run: "always", inline: "nmcli connection reload; systemctl restart network.service" 
+        override.ssh.username = $LOCAL_USER
+	override.ssh.private_key_path = $LOCAL_SSH_KEY
+    end
 
-  config.vm.box_check_update = false
+    config.vm.network :forwarded_port, guest: 22, host: 2217, id: "ssh"
+    config.vm.network "private_network", ip: "192.168.56.117"
+    config.vm.provision "shell", run: "always", inline: "nmcli connection reload; systemctl restart network.service" 
 
-  config.vm.synced_folder '.', '/vagrant', disabled: true
+    config.vm.box_check_update = false
+
+    config.vm.synced_folder '.', '/vagrant', disabled: true
 end

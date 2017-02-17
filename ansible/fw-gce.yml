@@ -16,8 +16,8 @@
     - local_action:
         module: gce_net
         name: default
-        fwname: "{{ RULE | default( 'allow-on-{{VMCFG}}' ) }}"
-        allowed: "{{ ALLOW | default( 'tcp:9000' ) }}"
+        fwname: "{{ RULE | default( 'allow-on-{{ VMCFG }}' ) }}"
+        allowed: "{{ ALLOW | default( 'tcp:8080,9000,9001-9010' ) }}"
         src_range: "0.0.0.0/0"
         target_tags: ["{{ TAGS }}"]
         service_account_email: "{{ GOOGLE_CLIENT_EMAIL }}"
