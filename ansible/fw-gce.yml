@@ -1,25 +1,31 @@
+
+#
+# Synopsis:
+# ansible-playbook -l edge5n2.exco.com ~/dbc/edge-ops/ansible/edge-server-config.yml -e "name=edge5n2-exco-com PROVIDER=gce  GOOGLE_PROJECT_ID=$GOOGLE_PROJECT_ID GOOGLE_CLIENT_EMAIL=$GOOGLE_CLIENT_EMAIL GOOGLE_JSON_KEY_LOCATION=$GOOGLE_JSON_KEY_LOCATION"
+#
+
 ---
 
 - hosts: all
   gather_facts: no
   
   vars: 
-    # VMCFG
+    # name -- name of the box
     # GOOGLE_PROJECT_ID
     # GOOGLE_CLIENT_EMAIL
     # GOOGLE_JSON_KEY_LOCATION
     # RULE:    # firewall rule name
     # ALLOW:   # 'tcp:80' or 'tcp:80,443' or 'tcp:80-800;udp:1-25'
-    TAGS: "{{ VMCFG }}"
+    # TAGS: "{{ name }}"
 
   tasks:
     - local_action:
         module: gce_net
         name: default
-        fwname: "{{ RULE | default( 'allow-on-{{ VMCFG }}' ) }}"
+        fwname: "{{ RULE | default( 'allow-on-' + hostvars['localhost']['name']  ) }}"
         allowed: "{{ ALLOW | default( 'tcp:8080,9000,9001-9010' ) }}"
         src_range: "0.0.0.0/0"
-        target_tags: ["{{ TAGS }}"]
+        target_tags: ["{{ TAGS | default( hostvars['localhost']['name'] ) }}"]
         service_account_email: "{{ GOOGLE_CLIENT_EMAIL }}"
         credentials_file: "{{ GOOGLE_JSON_KEY_LOCATION }}"
         project_id: "{{ GOOGLE_PROJECT_ID }}"

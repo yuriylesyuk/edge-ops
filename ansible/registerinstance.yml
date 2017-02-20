@@ -1,18 +1,20 @@
-
-#   VMCFG= VMDIR=
+#
+# Synopsis:
+# ansible-playbook ~/dbc/edge-ops/ansible/registerinstance.yml -e "VMCFG=$PWD/edge5n5-exco-com.cfg VMDIR=$PWD PROVIDER=gce" -u root --ask-sudo-pass
+#
 
 ---
 - hosts: localhost
   gather_facts: no
     
   vars:
-    name: "{{lookup('ini', 'name section=vmconfig file={{VMCFGFILE}}')}}"
-    hostname: "{{lookup('ini', 'hostname section=vmconfig file={{VMCFGFILE}}')}}"
-    vm_box: "{{lookup('ini', 'vm.box section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
-    zone: "{{lookup('ini', 'zone section={{VMTYPE}}-provider file={{VMCFGFILE}}')}}"
+    name: "{{lookup('ini', 'name section=vmconfig file={{VMCFG}}')}}"
+    hostname: "{{lookup('ini', 'hostname section=vmconfig file={{VMCFG}}')}}"
+    vm_box: "{{lookup('ini', 'vm.box section={{PROVIDER}}-provider file={{VMCFG}}')}}"
+    zone: "{{lookup('ini', 'zone section={{PROVIDER}}-provider file={{VMCFG}}')}}"
 
-    LOCAL_USER: "{{lookup('ini', 'LOCAL_USER section=vmconfig file={{VMCFGFILE}}')}}"
-    LOCAL_SSH_KEY: "{{lookup('ini', 'LOCAL_SSH_KEY section=vmconfig file={{VMCFGFILE}}')}}"
+    LOCAL_USER: "{{lookup('ini', 'LOCAL_USER section=vmconfig file={{VMCFG}}')}}"
+    LOCAL_SSH_KEY: "{{lookup('ini', 'LOCAL_SSH_KEY section=vmconfig file={{VMCFG}}')}}"
     
   tasks:
     - local_action:
@@ -56,5 +58,6 @@
         state: present
         dest: ~/ansible/hosts
         insertbefore: BOF
+        regexp: '^{{ hostname }}'
         line: "{{ hostname }} ansible_host={{ HOSTIP }} ansible_user={{ LOCAL_USER }} ansible_ssh_private_key_file={{ LOCAL_SSH_KEY }}"
         
