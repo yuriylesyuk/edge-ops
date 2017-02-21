@@ -1,19 +1,14 @@
 
 #
 # Usage: 
-# ansible-playbook -l yl-n2-1701-dp ~/dbc/edge-ops/ansible/edge-setup.yml -e "apigeeuser=jumpadmin apigeepassword=ArypectONg"
+# ansible-playbook -l yl-n2-1701-dp ~/dbc/edge-ops/ansible/edge-setup.yml
 #
 #
 
 ---
 - name: Edge Setup setup
   hosts: all
-  become: yes
-  become_method: sudo
   vars:
-    # apigeeuser:
-    # apigeepassword:
-  
     EID: /opt/apigee.install
     LOGFILE: "{{ EID }}/apigee-setup-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
 
@@ -21,26 +16,40 @@
     EID: "{{ EID }}"   # Edge Install Directory
     
   tasks:
-  - file: path="{{ EID }}" state=directory
+  - block:
+      - local_action:
+          module: command xmllint --xpath "//profile[id='edge-repo']/properties/username/text()" ~/.m2/settings.xml
+        register: settings_username
+      - local_action:
+          module: command xmllint --xpath "//profile[id='edge-repo']/properties/password/text()" ~/.m2/settings.xml
+        register: settings_password
+      - set_fact:
+          REPO_USERNAME: "{{settings_username.stdout}}"
+          REPO_PASSWORD: "{{settings_password.stdout}}"
 
-  - get_url:
-      url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
-      dest: "{{ EID }}"
-      timeout: 180
-  - yum:
-      name: "{{ EID }}/epel-release-latest-7.noarch.rpm"
-      state: present
-  - get_url:
-      url: "https://ap-repo.aeip.apigee.net/bootstrap_4.17.01.sh"
-      dest: "{{ EID }}"
-      url_username: "{{ apigeeuser }}"
-      url_password: "{{ apigeepassword }}"
-      timeout: 180
-  
-  - shell: "bash {{EID}}/bootstrap_4.17.01.sh apigeeuser={{ apigeeuser }} apigeepassword={{ apigeepassword }} apigeestage=e2e apigeerepohost=ap-repo.aeip.apigee.net > {{ LOGFILE }}"
-    args: 
-      chdir: "{{ EID }}/"
+  - block: 
+     - file: path="{{ EID }}" state=directory
 
-  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-setup install >> {{ LOGFILE }}"
-    args: 
-      chdir: "{{ EID }}/"
+     - get_url:
+         url: "https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm"
+         dest: "{{ EID }}"
+         timeout: 180
+     - yum:
+         name: "{{ EID }}/epel-release-latest-7.noarch.rpm"
+         state: present
+     - get_url:
+         url: "https://software.apigee.com/bootstrap_4.17.01.sh"
+         dest: "{{ EID }}"
+         url_username: "{{ REPO_USERNAME }}"
+         url_password: "{{ REPO_PASSWORD }}"
+         timeout: 180
+     - shell: "bash {{EID}}/bootstrap_4.17.01.sh apigeeuser={{ REPO_USERNAME }} apigeepassword={{ REPO_PASSWORD }} apigeerepohost=software.apigee.com > {{ LOGFILE }}"
+       args:
+         chdir: "{{ EID }}/"
+
+     - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-setup install >> {{ LOGFILE }}"
+       args:
+         chdir: "{{ EID }}/"
+
+    become: yes
+    become_method: sudo
