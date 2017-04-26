@@ -1,0 +1,22 @@
+
+# Control vagrant boxes
+
+# vagrant up:
+# ansible-playbook -i localhost,  ~/dbc/edge-ops/ansible/vagrantctl.yml -e "CLUSTER_CONFIG=$PWD/edge5ns.yml VAGRANT_DIR=$PWD ACTION=up"
+# 
+# TODO: call registerinstance.yml
+
+---
+- name: Vagrant boxes Control file
+  hosts: all
+  connection: local
+
+  tasks:
+  - include_vars: 
+      file: "{{ CLUSTER_CONFIG }}"
+      name: "cluster_config"
+  - block: 
+      - command: "vagrant {{ ACTION }}"
+        args:
+          chdir: "{{ VAGRANT_DIR }}/{{ item.name }}"
+        with_items: "{{ cluster_config.cluster }}"

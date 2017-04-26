@@ -1,0 +1,38 @@
+
+#
+# Usage: 
+# if CFG is defined, the jinja config generation step COMP.cfg.j2 is skipped
+#
+# ansible-playbook -l yl-n1-1701-aio ~/dbc/edge-ops/ansible/edge-comp-setup.yml -e "COMP=ds CFG=edge5ns.cfg"
+#
+---
+- name: Install Edge Component using setup.sh
+  hosts: all
+  become: yes
+  become_method: sudo
+  vars:
+    # apigeeuser:
+    # apigeepassword:
+  
+    # VER: 4.16.09|4.17.01
+    # IP1: 10.132.0.3
+    # PROVIDER: vb|gce
+    CFG_DEFAULT: "{{ COMP }}.cfg"
+    
+    EID: /opt/apigee.install
+    LOGFILE: "{{ EID }}/apigee-{{ COMP }}-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
+
+  environment: 
+    EID: "{{ EID }}"   # Edge Install Directory
+    
+  tasks:
+  - file: path="{{ EID }}" state=directory
+
+  - template: src=conf/{{ COMP }}.cfg.j2 dest="{{ EID }}/{{ CFG_DEFAULT }}"
+    when: CFG is undefined
+
+  - shell: "/opt/apigee/apigee-setup/bin/setup.sh -p {{ COMP }} -f {{ EID }}/{{ CFG | default( CFG_DEFAULT ) }}  >> {{ LOGFILE }}"
+    args: 
+      chdir: "{{ EID }}/"
+
+

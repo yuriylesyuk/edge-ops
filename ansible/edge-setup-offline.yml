@@ -1,0 +1,31 @@
+#
+# Usage:
+# ansible-playbook -l yl-n2-1701-dp ~/dbc/edge-ops/ansible/edge-setup.yml
+#
+#
+
+---
+- name: Edge Setup setup
+  hosts: all
+  vars:
+    EID: /opt/apigee.install
+    LOGFILE: "{{ EID }}/apigee-setup-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
+
+  environment:
+    EID: "{{ EID }}"   # Edge Install Directory
+
+  tasks:
+
+  - block:
+     - file: path="{{ EID }}" state=directory
+
+     - shell: "bash {{EID}}/repos/bootstrap_4.16.05.sh apigeeprotocol=\"file://\" apigeerepobasepath=/opt/apigee.install/repos > {{ LOGFILE }}"
+       args:
+         chdir: "{{ EID }}/"
+
+     - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-setup install >> {{ LOGFILE }}"
+       args:
+         chdir: "{{ EID }}/"
+
+    become: yes
+    become_method: sudo

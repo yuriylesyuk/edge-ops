@@ -4,7 +4,8 @@
 # 
 # ansible-playbook -l edge-exco-com ~/dbc/edge-ops/ansible/edge-comp.yml -e "COMP=influxdb INFLUXDB_HOST=10.132.0.2"
 #
-#
+# if CFG is provided, the jinja2 generation is skipped
+# 
 
 ---
 - name: Edge Component Install
@@ -13,7 +14,7 @@
   become_method: sudo
   vars:
     # COMP:
-    CFG: "{{ COMP }}.cfg"
+    CFG_DEFAULT: "{{ COMP }}.cfg"
     EID: /opt/apigee.install
     LOGFILE: "{{ EID }}/apigee-{{ COMP }}-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
 
@@ -23,13 +24,14 @@
   tasks:
   - file: path="{{ EID }}" state=directory
 
-  - template: src=conf/{{ CFG }}.j2 dest="{{ EID }}/{{ CFG }}"
+  - template: src="conf/{{ COMP }}.cfg.j2" dest="{{ EID }}/{{ CFG_DEFAULT }}"
+    when: CFG is undefined
 
   - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-{{ COMP }} install > {{ LOGFILE }}"
     args: 
       chdir: "{{ EID }}/"
 
-  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-{{ COMP }} setup -f {{ EID }}/{{ CFG }} >> {{ LOGFILE }}"
+  - shell: "/opt/apigee/apigee-service/bin/apigee-service apigee-{{ COMP }} setup -f {{ EID }}/{{ CFG | default( CFG_DEFAULT ) }} >> {{ LOGFILE }}"
     args: 
       chdir: "{{ EID }}/"
 
