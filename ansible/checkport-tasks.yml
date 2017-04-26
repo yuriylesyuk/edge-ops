@@ -1,0 +1,33 @@
+
+# Auxcillary 
+# Synopsis: 
+#   ansible -i "localhost," checkports.yml -e "C=10.119.3.233 S=10.119.3.236 P=9090"
+
+---
+- name: Start "Server"
+  command: nc -l 0.0.0.0 "{{ P }}"
+  async: 25
+  poll: 0
+  delegate_to: "{{ S }}"
+
+- name: Run "Client"
+  shell: echo "Hello" | nc "{{ S }}" "{{ P }}"
+  delegate_to: "{{ C }}"
+  ignore_errors: true
+  register: command_result
+
+- debug: msg="{{command_result}}"
+
+- name: Log Success Result
+  set_fact:
+    result: "{{C}} {{S}}:{{P}}: Success"
+  when: command_result.rc == 0
+  
+- name: Log Failure Result
+  set_fact:
+    result: "{{C}} {{S}}:{{P}} {{command_result.stderr}}"
+  when: command_result.rc != 0
+
+- name: Add to report
+  set_fact: 
+    report: "{{ report }} + [ '{{ result }}' ]"

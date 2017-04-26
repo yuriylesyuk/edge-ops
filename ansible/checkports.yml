@@ -1,0 +1,25 @@
+
+# Synopsis:
+#   ansible-playbook -i "localhost," checkports.yml
+#
+# Dependencies:
+#  checkport-tasks.yml
+#
+
+---
+- hosts: all
+
+  tasks:
+  - include_vars: file=openapi-dev-ports.json name=topology
+
+  - set_fact:
+      report: []
+
+  - name: Task
+    include: checkport-tasks.yml C={{item.c}} S={{item.s}} P={{item.p}}
+    register: command_result
+    ignore_errors: true
+    with_items: "{{ topology.ports }}"
+
+  - name: Print report
+    local_action: copy content="{{ report | to_nice_json }}" dest=/tmp/report.json
