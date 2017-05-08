@@ -18,7 +18,7 @@
     # VER: 4.16.09|4.17.01
     # IP1: 10.132.0.3
     # PROVIDER: vb|gce
-    EID: /opt/apigee.install
+    EID: /opt/apigee-install
     LOGFILE: "{{ EID }}/apigee-aio-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
 
   environment: 

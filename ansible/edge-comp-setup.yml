@@ -19,7 +19,7 @@
     # PROVIDER: vb|gce
     CFG_DEFAULT: "{{ COMP }}.cfg"
     
-    EID: /opt/apigee.install
+    EID: /opt/apigee-install
     LOGFILE: "{{ EID }}/apigee-{{ COMP }}-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
 
   environment: 

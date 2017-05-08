@@ -23,7 +23,7 @@
     # PROVIDER: vb|gce
     # ORG:
     # DEV:
-    EID: /opt/apigee.install
+    EID: /opt/apigee-install
     LOGFILE: "{{ EID }}/apigee-org-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
 
   environment:

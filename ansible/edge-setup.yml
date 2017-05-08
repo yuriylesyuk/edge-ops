@@ -9,7 +9,7 @@
 - name: Edge Setup setup
   hosts: all
   vars:
-    EID: /opt/apigee.install
+    EID: /opt/apigee-install
     LOGFILE: "{{ EID }}/apigee-setup-{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}.log"
 
   environment: 
