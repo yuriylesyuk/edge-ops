@@ -1,0 +1,34 @@
+#
+# Usage:
+#
+# ansible-playbook -l edge $OPS_HOME/fetch-logs.yml -e "DESTDIR=$PWD/uat-state"
+#
+#
+
+---
+
+- name: Fetch var/log for all notes
+  hosts: all
+  remote_user: apigee
+  become: yes
+
+  vars:
+     # DESTDIR:
+     TIMESTAMP: "{{lookup('pipe','date -u +\"%Y-%m-%dT%H:%M:%SZ\"')}}"
+
+  tasks:
+  - set_fact: 
+     TARFILENAME: "{{ inventory_hostname }}-varlog-{{ TIMESTAMP }}.tgz"
+
+  - archive:
+      path: 
+        - /opt/apigee/var
+        - /opt/apigee/customer
+        - /opt/apigee/etc
+        - /opt/apigee/token
+      dest: "/tmp/{{ TARFILENAME }}"
+
+  - fetch:
+      src: "/tmp/{{ TARFILENAME }}"
+      dest: "{{ DESTDIR }}/{{ inventory_hostname }}/{{ TARFILENAME }}"
+      flat: yes

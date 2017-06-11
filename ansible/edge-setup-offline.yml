@@ -19,7 +19,7 @@
   - block:
      - file: path="{{ EID }}" state=directory
 
-     - shell: "bash {{EID}}/repos/bootstrap_4.16.05.sh apigeeprotocol=\"file://\" apigeerepobasepath=/opt/apigee-install/repos > {{ LOGFILE }}"
+     - shell: "bash {{EID}}/repos/bootstrap_4.16.09.sh apigeeprotocol=\"file://\" apigeerepobasepath=/opt/apigee-install/repos > {{ LOGFILE }}"
        args:
          chdir: "{{ EID }}/"
 

@@ -1,6 +1,6 @@
 
 # Synopsis:
-#   ansible-playbook -i "localhost," checkports.yml
+#   ansible-playbook -f 50 -i "localhost," $OPS_HOME/checkports.yml -e "PORTFILE=$PWD/openapi-dev-ports-internals.json REPORTFILE=$PWD/ports-internals.json"
 #
 # Dependencies:
 #  checkport-tasks.yml
@@ -10,7 +10,7 @@
 - hosts: all
 
   tasks:
-  - include_vars: file=openapi-dev-ports.json name=topology
+  - include_vars: file={{ PORTFILE }} name=topology
 
   - set_fact:
       report: []
@@ -22,4 +22,4 @@
     with_items: "{{ topology.ports }}"
 
   - name: Print report
-    local_action: copy content="{{ report | to_nice_json }}" dest=/tmp/report.json
+    local_action: copy content="{{ report | to_nice_json }}" dest={{ REPORTFILE | default( '/tmp/report.json' ) }}

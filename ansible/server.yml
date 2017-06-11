@@ -6,19 +6,47 @@
   become_method: sudo
 
   tasks:
-  - name: Set file limits (* soft)
-    pam_limits: 
-      domain: '*' 
+  - name: Set memlock limits (apigee soft)
+    pam_limits:
+      domain: apigee
+      limit_type: soft
+      limit_item: memlock
+      value: unlimited
+
+  - name: Set memlock limits (apigee hard)
+    pam_limits:
+      domain: apigee
+      limit_type: hard
+      limit_item: memlock
+      value: unlimited
+
+  - name: Set nofile limits (apigee soft)
+    pam_limits:
+      domain: apigee
       limit_type: soft
       limit_item: nofile
       value: 65535
 
-  - name: Set file limits (* hard)
-    pam_limits: 
-      domain: '*'
-      limit_type: hard 
+  - name: Set nofile limits (apigee hard)
+    pam_limits:
+      domain: apigee
+      limit_type: hard
       limit_item: nofile
       value: 65535
+
+  - name: Set as limits (apigee soft)
+    pam_limits:
+      domain: apigee
+      limit_type: soft
+      limit_item: as
+      value: unlimited
+
+  - name: Set as limits (apigee hard)
+    pam_limits:
+      domain: apigee
+      limit_type: hard
+      limit_item: as
+      value: unlimited
 
   - lineinfile: dest=/etc/pam.d/login regexp='^session    required   pam_limits.so' insertafter=EOF line='session    required   pam_limits.so'
 

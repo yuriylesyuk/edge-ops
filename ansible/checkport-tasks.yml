@@ -20,7 +20,7 @@
 
 - name: Log Success Result
   set_fact:
-    result: "{{C}} {{S}}:{{P}}: Success"
+    result: "{{C}} {{S}}:{{P}} Success"
   when: command_result.rc == 0
   
 - name: Log Failure Result
